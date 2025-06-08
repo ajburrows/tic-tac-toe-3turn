@@ -1,0 +1,126 @@
+import React, { useEffect, useState } from 'react'
+import { SafeAreaView, StyleSheet, View } from 'react-native'
+
+import Cell from './components/cell'
+import PlayerBox from './components/playerBox'
+import ScoreBoard from './components/scoreBoard'
+
+import { gameBoardSize } from './utils'
+
+
+export default function Index() {
+  const [p1Moves, setP1Moves] = useState([])
+  const [p2Moves, setP2Moves] = useState([])
+  const [curMove, setCurMove] = useState(0)
+  const [p1Score, setP1Score] = useState(0)
+  const [p2Score, setP2Score] = useState(0)
+  const [gameOver, setGameOver] = useState(false)
+
+  const changePlayer = () => {setCurMove((curMove+1) % 2)}
+  useEffect(() => {
+    if (!gameOver && (p1Score >= 3 || p2Score >= 3)){
+      setGameOver(true)
+      console.log('GAME OVER')
+    }
+  }, [p1Score, p2Score, gameOver])
+
+  const makeMove = (index) => {
+    if (p1Moves.includes(index) || p2Moves.includes(index)){
+      console.log(`Tile ${index} is taken`)
+      return
+    } 
+    
+    if (curMove == 0){
+      const updatedMoves = [p1Moves[1], p1Moves[2], index]
+      setP1Moves(updatedMoves)
+      if (checkWin(updatedMoves) == true){
+        setP1Score(p1Score + 1)
+      }
+    } else {
+      const updatedMoves = [p2Moves[1], p2Moves[2], index]
+      setP2Moves(updatedMoves)
+      if (checkWin(updatedMoves) == true){
+        setP2Score(p2Score + 1)
+      }
+    }
+    changePlayer()
+  }
+
+  function getCellValue(index) {
+    if (p1Moves.includes(index)) return 'X'
+    if (p2Moves.includes(index)) return '0'
+    return ''
+  }
+
+  function getCellAge(index) {
+    if (p1Moves[0] === index) return 'old'
+    if (p1Moves[1] === index) return 'middle'
+    if (p1Moves[2] === index) return 'young'
+
+    if (p2Moves[0] === index) return 'old'
+    if (p2Moves[1] === index) return 'middle'
+    if (p2Moves[2] === index) return 'young'
+
+    return ''
+  }
+
+  const winningCombos = [
+    [0, 1, 2], // top row
+    [3, 4, 5], // middle row
+    [6, 7, 8], // bottom row
+    [0, 3, 6], // left column
+    [1, 4, 7], // middle column
+    [2, 5, 8], // right column
+    [0, 4, 8], // diagonal
+    [2, 4, 6], // diagonal
+  ]
+
+  function checkWin(playerMoves) {
+    return winningCombos.some(combo =>
+        combo.every(index => playerMoves.includes(index))
+    )
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <PlayerBox curMove={curMove} />
+      <View style={styles.gameBoard}>
+        {Array.from({ length: 9 }).map((_, index) => (
+          <Cell
+            key={index} 
+            id={index} 
+            value={getCellValue(index)} 
+            makeMove={() => makeMove(index)}
+            age={getCellAge(index)}></Cell>
+        ))}
+      </View>
+      <ScoreBoard p1Score={p1Score} p2Score={p2Score} />
+    </SafeAreaView>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gameBoard: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    alignContent: 'space-around',
+    height: gameBoardSize,
+    width: gameBoardSize,
+    backgroundColor: '#9368B7',
+    borderRadius: 10,
+    borderWidth: 4,
+    borderColor: '#9368B7',
+
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 3,
+  },
+})
