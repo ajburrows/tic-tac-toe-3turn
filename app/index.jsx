@@ -9,22 +9,28 @@ import { gameBoardSize } from './utils'
 
 
 export default function Index() {
-  const [p1Moves, setP1Moves] = useState([])
+  const [p1Moves, setP1Moves] = useState([]) // index 0 is the oldest move and index 2 is the youngest
   const [p2Moves, setP2Moves] = useState([])
-  const [curMove, setCurMove] = useState(0)
+  const [curMove, setCurMove] = useState(0) // 0 is P1's move and 1 is P2's move
   const [p1Score, setP1Score] = useState(0)
   const [p2Score, setP2Score] = useState(0)
   const [gameOver, setGameOver] = useState(false)
 
-  const changePlayer = () => {setCurMove((curMove+1) % 2)}
+
   useEffect(() => {
+    // Check if the game is over
     if (!gameOver && (p1Score >= 3 || p2Score >= 3)){
       setGameOver(true)
       console.log('GAME OVER')
     }
   }, [p1Score, p2Score, gameOver])
 
+  // Alternate between players on every turn
+  const changePlayer = () => {setCurMove((curMove+1) % 2)}
+
   const makeMove = (index) => {
+    // mark a tile with X or O and check if a point was scored
+    // remove the oldest tile and add the selected tile to the player's moves
     if (p1Moves.includes(index) || p2Moves.includes(index)){
       console.log(`Tile ${index} is taken`)
       return
@@ -83,7 +89,10 @@ export default function Index() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Display whose turn it is*/}
       <PlayerBox curMove={curMove} />
+
+      {/* Hold the tiles to make and display moves */}
       <View style={styles.gameBoard}>
         {Array.from({ length: 9 }).map((_, index) => (
           <Cell
@@ -94,6 +103,8 @@ export default function Index() {
             age={getCellAge(index)}></Cell>
         ))}
       </View>
+
+      {/* Show the current scores for each player */}
       <ScoreBoard p1Score={p1Score} p2Score={p2Score} />
     </SafeAreaView>
   )
