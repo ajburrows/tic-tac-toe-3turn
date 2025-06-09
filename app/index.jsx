@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView, StyleSheet, View } from 'react-native'
 
 import Cell from './components/cell'
+import GameOver from './components/gameOver'
 import PlayerBox from './components/playerBox'
 import ScoreBoard from './components/scoreBoard'
 
@@ -88,24 +89,32 @@ export default function Index() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Display whose turn it is*/}
-      <PlayerBox curMove={curMove} />
+    <SafeAreaView 
+      style={styles.container}>
+      {gameOver && (
+        <GameOver winner={p1Score >= 3 ? 'X' : 'O'}/>
+      )}
+      {!gameOver && (
+        <>
+          {/* Display whose turn it is*/}
+          <PlayerBox curMove={curMove} />
 
-      {/* Hold the tiles to make and display moves */}
-      <View style={styles.gameBoard}>
-        {Array.from({ length: 9 }).map((_, index) => (
-          <Cell
-            key={index} 
-            id={index} 
-            value={getCellValue(index)} 
-            makeMove={() => makeMove(index)}
-            age={getCellAge(index)}></Cell>
-        ))}
-      </View>
+          {/* Hold the tiles to make and display moves */}
+          <View style={styles.gameBoard}>
+            {Array.from({ length: 9 }).map((_, index) => (
+              <Cell
+                key={index} 
+                id={index} 
+                value={getCellValue(index)} 
+                makeMove={() => makeMove(index)}
+                age={getCellAge(index)}></Cell>
+            ))}
+          </View>
 
-      {/* Show the current scores for each player */}
-      <ScoreBoard p1Score={p1Score} p2Score={p2Score} />
+          {/* Show the current scores for each player */}
+          <ScoreBoard p1Score={p1Score} p2Score={p2Score} />
+        </>
+      )}
     </SafeAreaView>
   )
 }
@@ -115,6 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#F5E6E8'
   },
   gameBoard: {
     display: 'flex',

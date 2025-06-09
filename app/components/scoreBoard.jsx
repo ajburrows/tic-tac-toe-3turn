@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   // The winning player gets and emphasized scoreTile. If there is a tie, neither is emphasized.
   winningTile: {
     padding: 10,
-    backgroundColor: '#633A87',
+    backgroundColor: '#633A87', 
 
     borderColor: '#4A2C63',
     borderWidth: 3,
