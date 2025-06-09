@@ -1,10 +1,10 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
-export default function GameOver({ winner }){
+export default function GameOver({ winner, onPress }){
     return (
         <View style={styles.container}>
             <Text style={styles.gameOverText}>{winner} WINS</Text>
-            <TouchableOpacity style={styles.restartBtn}>
+            <TouchableOpacity style={styles.restartBtn} onPress={onPress}>
                 <Text style={styles.restartText}>Restart Game</Text>
             </TouchableOpacity>
         </View>
@@ -25,6 +25,7 @@ const styles = StyleSheet.create({
         fontSize: 65,
         color: '#4A2C63',
         marginBottom: 10,
+        textDecorationLine: 'underline',
     },
     restartBtn: {
         borderWidth: 2,
@@ -37,6 +38,5 @@ const styles = StyleSheet.create({
     restartText: {
         fontSize: 25,
         color: '#FFFFF0',
-
     }
 })

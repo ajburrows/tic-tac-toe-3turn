@@ -88,11 +88,21 @@ export default function Index() {
     )
   }
 
+  function restartGame(){
+    console.log('restarting game')
+    setP1Moves([])
+    setP2Moves([])
+    setCurMove(0)
+    setP1Score(0)
+    setP2Score(0)
+    setGameOver(false)
+  }
+
   return (
     <SafeAreaView 
       style={styles.container}>
       {gameOver && (
-        <GameOver winner={p1Score >= 3 ? 'X' : 'O'}/>
+        <GameOver winner={p1Score >= 3 ? 'X' : 'O'} onPress={restartGame}/>
       )}
       {!gameOver && (
         <>
