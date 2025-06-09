@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native'
+import { RFValue } from 'react-native-responsive-fontsize'
 
 export default function PlayerBox({ curMove }){
     return(
@@ -14,7 +15,7 @@ const styles = StyleSheet.create({
     margin: 20
   },
   playerText: {
-    fontSize: 35,
+    fontSize: RFValue(35),
     fontWeight: 'bold',
     color: 'white',
     shadowColor: '#B26EFF', // purple glow

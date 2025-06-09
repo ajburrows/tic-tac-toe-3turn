@@ -16,6 +16,8 @@ export default function Index() {
   const [p1Score, setP1Score] = useState(0)
   const [p2Score, setP2Score] = useState(0)
   const [gameOver, setGameOver] = useState(false)
+  const [winningLine, setWinningLine] = useState([])
+
 
 
   useEffect(() => {
@@ -40,14 +42,18 @@ export default function Index() {
     if (curMove == 0){
       const updatedMoves = [p1Moves[1], p1Moves[2], index]
       setP1Moves(updatedMoves)
-      if (checkWin(updatedMoves) == true){
+      const winCombo = checkWin(updatedMoves)
+      if (winCombo){
         setP1Score(p1Score + 1)
+        setWinningLine(winCombo)
       }
     } else {
       const updatedMoves = [p2Moves[1], p2Moves[2], index]
       setP2Moves(updatedMoves)
-      if (checkWin(updatedMoves) == true){
+      const winCombo = checkWin(updatedMoves)
+      if (winCombo){
         setP2Score(p2Score + 1)
+        setWinningLine(winCombo)
       }
     }
     changePlayer()
@@ -83,9 +89,13 @@ export default function Index() {
   ]
 
   function checkWin(playerMoves) {
-    return winningCombos.some(combo =>
-        combo.every(index => playerMoves.includes(index))
-    )
+    for (const combo of winningCombos) {
+      if (combo.every(index => playerMoves.includes(index))) {
+        return combo;
+      }
+    }
+
+    return null
   }
 
   function restartGame(){
@@ -117,12 +127,16 @@ export default function Index() {
                 id={index} 
                 value={getCellValue(index)} 
                 makeMove={() => makeMove(index)}
-                age={getCellAge(index)}></Cell>
+                age={getCellAge(index)}
+                highlighted={winningLine.includes(index)}
+              >
+              </Cell>
             ))}
           </View>
 
           {/* Show the current scores for each player */}
           <ScoreBoard p1Score={p1Score} p2Score={p2Score} />
+
         </>
       )}
     </SafeAreaView>

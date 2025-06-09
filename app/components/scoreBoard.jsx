@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native'
+import { RFValue } from 'react-native-responsive-fontsize'
 import { gameBoardSize } from '../utils'
 
 export default function ScoreBoard({ p1Score, p2Score }) {
@@ -63,11 +64,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   winningScoreText: {
-    fontSize: 40,
+    fontSize: RFValue(40),
     color: '#FFFFFF',
   },
   losingScoreText: {
-    fontSize: 40,
+    fontSize: RFValue(40),
     color: '#633A87',
   },
 })

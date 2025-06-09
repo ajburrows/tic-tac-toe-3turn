@@ -1,16 +1,38 @@
-import { StyleSheet, Text, TouchableOpacity } from 'react-native'
-import { gameBoardSize } from '../utils'
+import { MotiView, useAnimationState } from 'moti';
+import { useEffect } from 'react';
+import { StyleSheet, Text } from 'react-native';
+import { cellSize, gameBoardSize } from '../utils';
 
-export default function Cell({ value, makeMove, age }) {
-    return (
-        <TouchableOpacity
-            style={styles.cell}
-            onPress={makeMove}
-        >
-            <Text style={[styles.text, age && styles[age]]}>{value}</Text>
-        </TouchableOpacity>
-    )
+export default function Cell({ value, makeMove, age, highlighted }) {
+  const animationState = useAnimationState({
+    idle: { scale: 1, opacity: 1 },
+    grow: { scale: 1.15, opacity: 1 },
+    shrink: { scale: 0, opacity: 0.3 },
+    reset: { scale: 1, opacity: 1 },
+  });
+
+  useEffect(() => {
+    if (highlighted) {
+      animationState.transitionTo('grow');
+      setTimeout(() => animationState.transitionTo('shrink'), 300);
+      setTimeout(() => animationState.transitionTo('reset'), 800);
+    }
+  }, [highlighted]);
+
+  return (
+    <MotiView
+      state={animationState}
+      transition={{ type: 'timing', duration: 300 }}
+      style={styles.cell}
+      onTouchEnd={makeMove}
+    >
+      <MotiView style={[styles.text, age && styles[age]]}>
+        <Text style={styles.text}>{value}</Text>
+      </MotiView>
+    </MotiView>
+  )
 }
+
 
 
 const styles = StyleSheet.create({
@@ -31,7 +53,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   text: {
-    fontSize: 65,
+    fontSize: cellSize * 0.75,
     fontWeight: 300,
     color: '#4A2C63',
     //color: '#B0B0C0',
@@ -44,5 +66,8 @@ const styles = StyleSheet.create({
   },
   old: {
     opacity: 0.33
+  },
+  highlight: {
+
   }
 })
