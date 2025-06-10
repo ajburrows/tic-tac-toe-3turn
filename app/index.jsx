@@ -1,5 +1,5 @@
 import { MotiView } from 'moti'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
 
 import Cell from './components/cell'
@@ -16,7 +16,6 @@ const TURN_DURATION = 5 // each players has this many seconds to make their move
 export default function Index() {
   const [p1Moves, setP1Moves] = useState([]) // index 0 is the oldest move and index 2 is the youngest
   const [p2Moves, setP2Moves] = useState([])
-  const [intervalId, setIntervalId] = useState(null)
   const [curMove, setCurMove] = useState(0) // 0 is P1's move and 1 is P2's move
   const [p1Score, setP1Score] = useState(0)
   const [p2Score, setP2Score] = useState(0)
@@ -26,6 +25,7 @@ export default function Index() {
   const [isRestarting, setIsRestarting] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(TURN_DURATION)
   const [gameStarted, setGameStarted] = useState(false)
+  const intervalRef = useRef(null)
 
   // Wait for the score animation to complete before switching to the Game Over screen
   useEffect(() => {
@@ -37,11 +37,11 @@ export default function Index() {
 
   // Stop the timer when the game ends
   useEffect(() => {
-    if (gameOver && intervalId) {
-      clearInterval(intervalId)
-      setIntervalId(null)
+    if (gameOver && intervalRef.current) {
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
     }
-  }, [gameOver, intervalId])
+  }, [gameOver, intervalRef.current])
 
   // Reset timer when a move is made
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function Index() {
 
     setSecondsLeft(TURN_DURATION)
 
-    if (intervalId) clearInterval(intervalId)
+    if (intervalRef.current) clearInterval(intervalRef.current)
 
     // Start timer's countdown interval
     const id = setInterval(() => {
@@ -63,7 +63,7 @@ export default function Index() {
       })
     }, 100)
 
-    setIntervalId(id)
+    intervalRef.current = id
 
     return () => clearInterval(id)
   }, [curMove])
@@ -73,7 +73,7 @@ export default function Index() {
     if (!gameOver && (p1Score >= POINTS_TO_WIN || p2Score >= POINTS_TO_WIN)){
       const timeout = setTimeout(() => {
         setGameOver(true)
-        console.log(`clearing intervalId: ${intervalId}`)
+        console.log(`clearing intervalRef.current: ${intervalRef.current}`)
       }, 1000)
 
       return () => clearTimeout(timeout)
@@ -94,7 +94,7 @@ export default function Index() {
       return
     } 
 
-    if (intervalId) clearInterval(intervalId)
+    if (intervalRef.current) clearInterval(intervalRef.current)
     
     if (curMove == 0){
       const updatedMoves = [p1Moves[1], p1Moves[2], index]
@@ -105,10 +105,10 @@ export default function Index() {
         setP1Score(p1Score + 1)
         setWinningLine(winCombo)
 
-        if (intervalId && gameOver){
+        if (intervalRef.current && gameOver){
           console.log('clearing interval')
-          clearInterval(intervalId)
-          setIntervalId(null)
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
         }
 
         setTimeout(() => {
@@ -125,9 +125,9 @@ export default function Index() {
         setP2Score(p2Score + 1)
         setWinningLine(winCombo)
 
-        if (intervalId && gameOver){
-          clearInterval(intervalId)
-          setIntervalId(null)
+        if (intervalRef.current && gameOver){
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
         }
 
         setTimeout(() => {
@@ -195,8 +195,8 @@ export default function Index() {
       setShowGameOver(false)
       setIsRestarting(false)
       setSecondsLeft(TURN_DURATION)
-      setIntervalId(null)
       setGameStarted(false)
+      intervalRef.current = null
     }, 500)
   }
 
