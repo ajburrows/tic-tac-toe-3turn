@@ -23,8 +23,11 @@ export default function Index() {
   useEffect(() => {
     // Check if the game is over
     if (!gameOver && (p1Score >= 3 || p2Score >= 3)){
-      setGameOver(true)
-      console.log('GAME OVER')
+      const timeout = setTimeout(() => {
+        setGameOver(true)
+      }, 1000)
+
+      return () => clearTimeout(timeout)
     }
   }, [p1Score, p2Score, gameOver])
 
@@ -46,6 +49,12 @@ export default function Index() {
       if (winCombo){
         setP1Score(p1Score + 1)
         setWinningLine(winCombo)
+
+        setTimeout(() => {
+          //setP1Moves([])
+          setWinningLine([])
+        }, 600)
+
       }
     } else {
       const updatedMoves = [p2Moves[1], p2Moves[2], index]
@@ -54,6 +63,11 @@ export default function Index() {
       if (winCombo){
         setP2Score(p2Score + 1)
         setWinningLine(winCombo)
+
+        setTimeout(() => {
+          //setP2Moves([])
+          setWinningLine([])
+        }, 600)
       }
     }
     changePlayer()
