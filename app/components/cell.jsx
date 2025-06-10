@@ -25,7 +25,7 @@ export default function Cell({ value, makeMove, age, highlighted }) {
     if (highlighted) {
       animationState.transitionTo('idle');
       setTimeout(() => animationState.transitionTo('grow'), 100)
-      setTimeout(() => animationState.transitionTo('idle'), 600);
+      setTimeout(() => animationState.transitionTo('idle'), 600)
     }
   }, [highlighted]);
 
@@ -78,27 +78,3 @@ const styles = StyleSheet.create({
     opacity: 0.33
   },
 })
-
-/*
-  highlight: {
-    shadowColor: 'gold',
-    shadowOpacity: 0.9,
-    shadowRadius: 10,
-  }
-
-  const animationState = useAnimationState({
-    idle: { scale: 1, opacity: 1 },
-    grow: { scale: 1.1, opacity: 1 },
-    shrink: { scale: 0, opacity: 0.3 },
-    reset: { scale: 1, opacity: 1 },
-  });
-
-  useEffect(() => {
-    if (highlighted) {
-      animationState.transitionTo('grow');
-      setTimeout(() => animationState.transitionTo('shrink'), 300);
-      setTimeout(() => animationState.transitionTo('reset'), 800);
-    }
-  }, [highlighted]);
-
-*/

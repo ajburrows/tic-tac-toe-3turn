@@ -1,3 +1,4 @@
+import { MotiView } from 'moti'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, StyleSheet, View } from 'react-native'
 
@@ -8,6 +9,8 @@ import ScoreBoard from './components/scoreBoard'
 
 import { gameBoardSize } from './utils'
 
+const POINTS_TO_WIN = 1
+
 
 export default function Index() {
   const [p1Moves, setP1Moves] = useState([]) // index 0 is the oldest move and index 2 is the youngest
@@ -17,12 +20,21 @@ export default function Index() {
   const [p2Score, setP2Score] = useState(0)
   const [gameOver, setGameOver] = useState(false)
   const [winningLine, setWinningLine] = useState([])
+  const [showGameOver, setShowGameOver] = useState(false)
+  const [isRestarting, setIsRestarting] = useState(false)
 
+  // Wait for the score animation to complete before switching to the Game Over screen
+  useEffect(() => {
+    if (gameOver) {
+      const timeout = setTimeout(() => setShowGameOver(true), 500)
+      return () => clearTimeout(timeout)
+    }
+  }, [gameOver])
 
 
   useEffect(() => {
     // Check if the game is over
-    if (!gameOver && (p1Score >= 3 || p2Score >= 3)){
+    if (!gameOver && (p1Score >= POINTS_TO_WIN || p2Score >= POINTS_TO_WIN)){
       const timeout = setTimeout(() => {
         setGameOver(true)
       }, 1000)
@@ -114,44 +126,64 @@ export default function Index() {
 
   function restartGame(){
     console.log('restarting game')
-    setP1Moves([])
-    setP2Moves([])
-    setCurMove(0)
-    setP1Score(0)
-    setP2Score(0)
-    setGameOver(false)
+
+    setIsRestarting(true);
+
+    setTimeout(() => {
+      setP1Moves([])
+      setP2Moves([])
+      setCurMove(0)
+      setP1Score(0)
+      setP2Score(0)
+      setGameOver(false)
+      setShowGameOver(false)
+      setIsRestarting(false)
+    }, 500)
   }
 
   return (
-    <SafeAreaView 
-      style={styles.container}>
-      {gameOver && (
-        <GameOver winner={p1Score >= 3 ? 'X' : 'O'} onPress={restartGame}/>
-      )}
-      {!gameOver && (
-        <>
-          {/* Display whose turn it is*/}
-          <PlayerBox curMove={curMove} />
+    <SafeAreaView style={styles.container}>
+      <MotiView
+        from={{ opacity: 1}}
+        animate={{ opacity: gameOver ? 0 : 1 }}
+        transition={{ duration: 500}}
+      >
+          {!showGameOver && (
+            <SafeAreaView style={styles.container}>
+                {/* Display whose turn it is*/}
+                <PlayerBox curMove={curMove} />
 
-          {/* Hold the tiles to make and display moves */}
-          <View style={styles.gameBoard}>
-            {Array.from({ length: 9 }).map((_, index) => (
-              <Cell
-                key={index} 
-                id={index} 
-                value={getCellValue(index)} 
-                makeMove={() => makeMove(index)}
-                age={getCellAge(index)}
-                highlighted={winningLine.includes(index)}
-              >
-              </Cell>
-            ))}
-          </View>
+                {/* Hold the tiles to make and display moves */}
+                <View style={styles.gameBoard}>
+                  {Array.from({ length: 9 }).map((_, index) => (
+                    <Cell
+                      key={index} 
+                      id={index} 
+                      value={getCellValue(index)} 
+                      makeMove={() => makeMove(index)}
+                      age={getCellAge(index)}
+                      highlighted={winningLine.includes(index)}
+                    >
+                    </Cell>
+                  ))}
+                </View>
 
-          {/* Show the current scores for each player */}
-          <ScoreBoard p1Score={p1Score} p2Score={p2Score} />
-
-        </>
+                {/* Show the current scores for each player */}
+                <ScoreBoard p1Score={p1Score} p2Score={p2Score} />
+            </SafeAreaView>
+            )}
+      </MotiView>
+      
+      {showGameOver && (
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: isRestarting ? 0 : 1 }}
+          transition={{ duration: 500 }}
+        >
+          <SafeAreaView style={styles.container}>
+            <GameOver winner={p1Score >= POINTS_TO_WIN ? 'X' : 'O'} onPress={restartGame}/>
+          </SafeAreaView>
+        </MotiView>
       )}
     </SafeAreaView>
   )
