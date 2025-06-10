@@ -9,8 +9,8 @@ import ScoreBoard from './components/scoreBoard'
 
 import { gameBoardSize } from './utils'
 
-const POINTS_TO_WIN = 1
-const TURN_DURATION = 10 // each players has this many seconds to make their move
+const POINTS_TO_WIN = 3
+const TURN_DURATION = 5 // each players has this many seconds to make their move
 
 
 export default function Index() {
@@ -25,6 +25,7 @@ export default function Index() {
   const [showGameOver, setShowGameOver] = useState(false)
   const [isRestarting, setIsRestarting] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(TURN_DURATION)
+  const [gameStarted, setGameStarted] = useState(false)
 
   // Wait for the score animation to complete before switching to the Game Over screen
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function Index() {
     }
   }, [gameOver])
 
+  // Stop the timer when the game ends
   useEffect(() => {
     if (gameOver && intervalId) {
       clearInterval(intervalId)
@@ -43,7 +45,7 @@ export default function Index() {
 
   // Reset timer when a move is made
   useEffect(() => {
-    if (gameOver) return
+    if (!gameStarted || gameOver) return
 
     setSecondsLeft(TURN_DURATION)
 
@@ -79,7 +81,10 @@ export default function Index() {
   }, [p1Score, p2Score, gameOver])
 
   // Alternate between players on every turn
-  const changePlayer = () => {setCurMove((curMove+1) % 2)}
+  const changePlayer = () => {
+    setCurMove((curMove+1) % 2)
+    if (!gameStarted) setGameStarted(true)
+  }
 
   const makeMove = (index) => {
     // mark a tile with X or O and check if a point was scored
@@ -96,10 +101,12 @@ export default function Index() {
       setP1Moves(updatedMoves)
       const winCombo = checkWin(updatedMoves)
       if (winCombo){
+        console.log('P1 scored')
         setP1Score(p1Score + 1)
         setWinningLine(winCombo)
 
-        if (intervalId){
+        if (intervalId && gameOver){
+          console.log('clearing interval')
           clearInterval(intervalId)
           setIntervalId(null)
         }
@@ -108,7 +115,7 @@ export default function Index() {
           setWinningLine([])
         }, 600)
 
-        return
+        if (p1Score >= POINTS_TO_WIN - 1) return
       }
     } else {
       const updatedMoves = [p2Moves[1], p2Moves[2], index]
@@ -118,7 +125,7 @@ export default function Index() {
         setP2Score(p2Score + 1)
         setWinningLine(winCombo)
 
-        if (intervalId){
+        if (intervalId && gameOver){
           clearInterval(intervalId)
           setIntervalId(null)
         }
@@ -127,9 +134,10 @@ export default function Index() {
           setWinningLine([])
         }, 600)
 
-        return
+        if (p2Score >= POINTS_TO_WIN - 1) return
       }
     }
+    console.log("changing player")
     changePlayer()
   }
 
@@ -188,6 +196,7 @@ export default function Index() {
       setIsRestarting(false)
       setSecondsLeft(TURN_DURATION)
       setIntervalId(null)
+      setGameStarted(false)
     }, 500)
   }
 
