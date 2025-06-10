@@ -1,6 +1,6 @@
 import { MotiView } from 'moti'
 import React, { useEffect, useState } from 'react'
-import { SafeAreaView, StyleSheet, View } from 'react-native'
+import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
 
 import Cell from './components/cell'
 import GameOver from './components/gameOver'
@@ -10,11 +10,13 @@ import ScoreBoard from './components/scoreBoard'
 import { gameBoardSize } from './utils'
 
 const POINTS_TO_WIN = 1
+const TURN_DURATION = 10 // each players has this many seconds to make their move
 
 
 export default function Index() {
   const [p1Moves, setP1Moves] = useState([]) // index 0 is the oldest move and index 2 is the youngest
   const [p2Moves, setP2Moves] = useState([])
+  const [intervalId, setIntervalId] = useState(null)
   const [curMove, setCurMove] = useState(0) // 0 is P1's move and 1 is P2's move
   const [p1Score, setP1Score] = useState(0)
   const [p2Score, setP2Score] = useState(0)
@@ -22,6 +24,7 @@ export default function Index() {
   const [winningLine, setWinningLine] = useState([])
   const [showGameOver, setShowGameOver] = useState(false)
   const [isRestarting, setIsRestarting] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState(TURN_DURATION)
 
   // Wait for the score animation to complete before switching to the Game Over screen
   useEffect(() => {
@@ -31,12 +34,44 @@ export default function Index() {
     }
   }, [gameOver])
 
+  useEffect(() => {
+    if (gameOver && intervalId) {
+      clearInterval(intervalId)
+      setIntervalId(null)
+    }
+  }, [gameOver, intervalId])
+
+  // Reset timer when a move is made
+  useEffect(() => {
+    if (gameOver) return
+
+    setSecondsLeft(TURN_DURATION)
+
+    if (intervalId) clearInterval(intervalId)
+
+    // Start timer's countdown interval
+    const id = setInterval(() => {
+      setSecondsLeft(prev => {
+        if (prev <= 0.1) {
+          clearInterval(id)
+          changePlayer()
+          return TURN_DURATION
+        }
+        return +(prev - 0.1).toFixed(1)
+      })
+    }, 100)
+
+    setIntervalId(id)
+
+    return () => clearInterval(id)
+  }, [curMove])
 
   useEffect(() => {
     // Check if the game is over
     if (!gameOver && (p1Score >= POINTS_TO_WIN || p2Score >= POINTS_TO_WIN)){
       const timeout = setTimeout(() => {
         setGameOver(true)
+        console.log(`clearing intervalId: ${intervalId}`)
       }, 1000)
 
       return () => clearTimeout(timeout)
@@ -53,6 +88,8 @@ export default function Index() {
       console.log(`Tile ${index} is taken`)
       return
     } 
+
+    if (intervalId) clearInterval(intervalId)
     
     if (curMove == 0){
       const updatedMoves = [p1Moves[1], p1Moves[2], index]
@@ -62,11 +99,16 @@ export default function Index() {
         setP1Score(p1Score + 1)
         setWinningLine(winCombo)
 
+        if (intervalId){
+          clearInterval(intervalId)
+          setIntervalId(null)
+        }
+
         setTimeout(() => {
-          //setP1Moves([])
           setWinningLine([])
         }, 600)
 
+        return
       }
     } else {
       const updatedMoves = [p2Moves[1], p2Moves[2], index]
@@ -76,10 +118,16 @@ export default function Index() {
         setP2Score(p2Score + 1)
         setWinningLine(winCombo)
 
+        if (intervalId){
+          clearInterval(intervalId)
+          setIntervalId(null)
+        }
+
         setTimeout(() => {
-          //setP2Moves([])
           setWinningLine([])
         }, 600)
+
+        return
       }
     }
     changePlayer()
@@ -138,6 +186,8 @@ export default function Index() {
       setGameOver(false)
       setShowGameOver(false)
       setIsRestarting(false)
+      setSecondsLeft(TURN_DURATION)
+      setIntervalId(null)
     }, 500)
   }
 
@@ -150,8 +200,11 @@ export default function Index() {
       >
           {!showGameOver && (
             <SafeAreaView style={styles.container}>
-                {/* Display whose turn it is*/}
+                {/* Display whose turn it is */}
                 <PlayerBox curMove={curMove} />
+                
+                {/* Display turn timer */}
+                <Text style={styles.timerText}>{secondsLeft.toFixed(1)}s</Text>
 
                 {/* Hold the tiles to make and display moves */}
                 <View style={styles.gameBoard}>
@@ -214,4 +267,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 3,
   },
+  timerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#4A2C63'
+  }
 })
