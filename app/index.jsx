@@ -1,13 +1,12 @@
 import { MotiView } from 'moti'
 import React, { useEffect, useRef, useState } from 'react'
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native'
+import { SafeAreaView, StyleSheet, Text } from 'react-native'
 
-import Cell from './components/cell'
+import GameBoard from './components/GameBoard'
 import GameOver from './components/gameOver'
 import PlayerBox from './components/playerBox'
 import ScoreBoard from './components/scoreBoard'
 
-import { gameBoardSize } from './utils'
 
 const POINTS_TO_WIN = 3
 const TURN_DURATION = 5 // each players has this many seconds to make their move
@@ -222,19 +221,12 @@ export default function Index() {
                 <Text style={styles.timerText}>{gameState.secondsLeft.toFixed(1)}s</Text>
 
                 {/* Hold the tiles to make and display moves */}
-                <View style={styles.gameBoard}>
-                  {Array.from({ length: 9 }).map((_, index) => (
-                    <Cell
-                      key={index} 
-                      id={index} 
-                      value={getCellValue(index)} 
-                      makeMove={() => makeMove(index)}
-                      age={getCellAge(index)}
-                      highlighted={gameState.winningLine.includes(index)}
-                    >
-                    </Cell>
-                  ))}
-                </View>
+                <GameBoard 
+                  p1Moves={gameState.p1Moves}
+                  p2Moves={gameState.p2Moves}
+                  winningLine={gameState.winningLine}
+                  onCellPress={makeMove}
+                />
 
                 {/* Show the current scores for each player */}
                 <ScoreBoard p1Score={gameState.p1Score} p2Score={gameState.p2Score} />
@@ -264,24 +256,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#F5E6E8'
   },
-  gameBoard: {
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    alignContent: 'space-around',
-    height: gameBoardSize,
-    width: gameBoardSize,
-    backgroundColor: '#9368B7',
-    borderRadius: 10,
-    borderWidth: 4,
-    borderColor: '#9368B7',
-
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 3,
-  },
+ 
   timerText: {
     fontSize: 24,
     fontWeight: 'bold',
