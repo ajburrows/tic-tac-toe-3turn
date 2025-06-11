@@ -7,6 +7,7 @@ import GameOver from './components/gameOver'
 import PlayerBox from './components/playerBox'
 import ScoreBoard from './components/scoreBoard'
 import { GAME_CONFIG } from './config/game'
+import { useGameMoves } from './hooks/useGameMoves'
 import { useGameTimer } from './hooks/useGameTimer'
 
 export default function Index() {
@@ -32,6 +33,7 @@ export default function Index() {
     }
   }, [gameState.gameOver])
 
+  // Pause timer when game ends
   useEffect(() => {
     // Check if the game is over
     if (!gameState.gameOver && (gameState.p1Score >= GAME_CONFIG.POINTS_TO_WIN || gameState.p2Score >= GAME_CONFIG.POINTS_TO_WIN)){
@@ -49,56 +51,9 @@ export default function Index() {
     if (!gameState.gameStarted) setGameState(prev => ({ ...prev, gameStarted: true }))
   }
 
+  // Start the timer and handle moves
   const intervalRef = useGameTimer(gameState, setGameState, changePlayer)
-
-  const makeMove = (index) => {
-    if (gameState.p1Moves.includes(index) || gameState.p2Moves.includes(index)) return
-    
-    if (intervalRef.current) clearInterval(intervalRef.current)
-    
-    if (gameState.curMove == 0){
-      const updatedMoves = [gameState.p1Moves[1], gameState.p1Moves[2], index]
-      setGameState(prev => ({ ...prev, p1Moves: updatedMoves }))
-      const winCombo = checkWin(updatedMoves)
-      if (winCombo){
-        setGameState(prev => ({ ...prev, p1Score: prev.p1Score + 1, winningLine: winCombo }))
-        /*
-        if (intervalRef.current && gameState.gameOver){
-          console.log('clearing interval')
-          clearInterval(intervalRef.current)
-          intervalRef.current = null
-        }
-        */
-
-        setTimeout(() => {
-          setGameState(prev => ({ ...prev, winningLine: [] }))
-        }, 600)
-
-        if (gameState.p1Score >= GAME_CONFIG.POINTS_TO_WIN - 1) return
-      }
-    } else {
-      const updatedMoves = [gameState.p2Moves[1], gameState.p2Moves[2], index]
-      setGameState(prev => ({ ...prev, p2Moves: updatedMoves }))
-      const winCombo = checkWin(updatedMoves)
-      if (winCombo){
-        setGameState(prev => ({ ...prev, p2Score: prev.p2Score + 1, winningLine: winCombo }))
-
-        /*
-        if (intervalRef.current && gameState.gameOver){
-          clearInterval(intervalRef.current)
-          intervalRef.current = null
-        }
-        */
-
-        setTimeout(() => {
-          setGameState(prev => ({ ...prev, winningLine: [] }))
-        }, 600)
-
-        if (gameState.p2Score >= GAME_CONFIG.POINTS_TO_WIN - 1) return
-      }
-    }
-    changePlayer()
-  }
+  const { makeMove } = useGameMoves(gameState, setGameState, changePlayer, intervalRef)
 
   function getCellValue(index) {
     if (gameState.p1Moves.includes(index)) return 'X'
@@ -107,36 +62,11 @@ export default function Index() {
   }
 
   function getCellAge(index) {
-    if (gameState.p1Moves[0] === index) return 'old'
-    if (gameState.p1Moves[1] === index) return 'middle'
-    if (gameState.p1Moves[2] === index) return 'young'
-
-    if (gameState.p2Moves[0] === index) return 'old'
-    if (gameState.p2Moves[1] === index) return 'middle'
-    if (gameState.p2Moves[2] === index) return 'young'
+    if (gameState.p1Moves[0] === index || gameState.p2Moves[0] === index) return 'old'
+    if (gameState.p1Moves[1] === index || gameState.p2Moves[1] === index) return 'middle'
+    if (gameState.p1Moves[2] === index || gameState.p2Moves[2] === index) return 'young'
 
     return ''
-  }
-
-  const winningCombos = [
-    [0, 1, 2], // top row
-    [3, 4, 5], // middle row
-    [6, 7, 8], // bottom row
-    [0, 3, 6], // left column
-    [1, 4, 7], // middle column
-    [2, 5, 8], // right column
-    [0, 4, 8], // diagonal
-    [2, 4, 6], // diagonal
-  ]
-
-  function checkWin(playerMoves) {
-    for (const combo of winningCombos) {
-      if (combo.every(index => playerMoves.includes(index))) {
-        return combo;
-      }
-    }
-
-    return null
   }
 
   function restartGame(){
@@ -145,6 +75,7 @@ export default function Index() {
       isRestarting: true
     }))
 
+    // Wait for scoring animation to complete before restarting the game
     setTimeout(() => {
       setGameState({
         p1Moves: [],
