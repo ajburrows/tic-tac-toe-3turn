@@ -7,10 +7,7 @@ import GameOver from './components/gameOver'
 import PlayerBox from './components/playerBox'
 import ScoreBoard from './components/scoreBoard'
 
-
-const POINTS_TO_WIN = 3
-const TURN_DURATION = 5 // each players has this many seconds to make their move
-
+import { GAME_CONFIG } from './config/game'
 
 export default function Index() {
   const [gameState, setGameState] = useState({
@@ -23,9 +20,10 @@ export default function Index() {
     winningLine: [],
     showGameOver: false,
     isRestarting: false,
-    secondsLeft: TURN_DURATION,
+    secondsLeft: GAME_CONFIG.TURN_DURATION,
     gameStarted: false
   });
+
   const intervalRef = useRef(null)
 
   // Wait for the score animation to complete before switching to the Game Over screen
@@ -48,15 +46,15 @@ export default function Index() {
   useEffect(() => {
     if (!gameState.gameStarted || gameState.gameOver) return
 
-    setGameState(prev => ({ ...prev, secondsLeft: TURN_DURATION }))
+    setGameState(prev => ({ ...prev, secondsLeft: GAME_CONFIG.TURN_DURATION }))
 
     if (intervalRef.current) clearInterval(intervalRef.current)
 
     // Start timer's countdown interval
     const id = setInterval(() => {
       setGameState(prev => {
-        const newSecondsLeft = prev.secondsLeft <= 0.1 ? TURN_DURATION : +(prev.secondsLeft - 0.1).toFixed(1)
-        if (newSecondsLeft === TURN_DURATION) {
+        const newSecondsLeft = prev.secondsLeft <= 0.1 ? GAME_CONFIG.TURN_DURATION : +(prev.secondsLeft - 0.1).toFixed(1)
+        if (newSecondsLeft === GAME_CONFIG.TURN_DURATION) {
           clearInterval(id)
           changePlayer()
         }
@@ -71,7 +69,7 @@ export default function Index() {
 
   useEffect(() => {
     // Check if the game is over
-    if (!gameState.gameOver && (gameState.p1Score >= POINTS_TO_WIN || gameState.p2Score >= POINTS_TO_WIN)){
+    if (!gameState.gameOver && (gameState.p1Score >= GAME_CONFIG.POINTS_TO_WIN || gameState.p2Score >= GAME_CONFIG.POINTS_TO_WIN)){
       const timeout = setTimeout(() => {
         setGameState(prev => ({ ...prev, gameOver: true }))
         console.log(`clearing intervalRef.current: ${intervalRef.current}`)
@@ -115,7 +113,7 @@ export default function Index() {
           setGameState(prev => ({ ...prev, winningLine: [] }))
         }, 600)
 
-        if (gameState.p1Score >= POINTS_TO_WIN - 1) return
+        if (gameState.p1Score >= GAME_CONFIG.POINTS_TO_WIN - 1) return
       }
     } else {
       const updatedMoves = [gameState.p2Moves[1], gameState.p2Moves[2], index]
@@ -133,7 +131,7 @@ export default function Index() {
           setGameState(prev => ({ ...prev, winningLine: [] }))
         }, 600)
 
-        if (gameState.p2Score >= POINTS_TO_WIN - 1) return
+        if (gameState.p2Score >= GAME_CONFIG.POINTS_TO_WIN - 1) return
       }
     }
     console.log("changing player")
@@ -198,7 +196,7 @@ export default function Index() {
         gameOver: false,
         showGameOver: false,
         isRestarting: false,
-        secondsLeft: TURN_DURATION,
+        secondsLeft: GAME_CONFIG.TURN_DURATION,
         gameStarted: false,
         intervalRef: null
       }))
@@ -241,7 +239,7 @@ export default function Index() {
           transition={{ duration: 500 }}
         >
           <SafeAreaView style={styles.container}>
-            <GameOver winner={gameState.p1Score >= POINTS_TO_WIN ? 'X' : 'O'} onPress={restartGame}/>
+            <GameOver winner={gameState.p1Score >= GAME_CONFIG.POINTS_TO_WIN ? 'X' : 'O'} onPress={restartGame}/>
           </SafeAreaView>
         </MotiView>
       )}
