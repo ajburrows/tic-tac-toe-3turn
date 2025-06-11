@@ -1,11 +1,26 @@
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
-import { useCellState } from '../hooks/useCellState'
 import { gameBoardSize } from '../utils'
 import Cell from './cell'
 
 export default function GameBoard({ p1Moves, p2Moves, winningLine, onCellPress }) {
-  const { getCellValue, getCellAge } = useCellState(p1Moves, p2Moves)
+  function getCellValue(index) {
+    if (p1Moves.includes(index)) return 'X'
+    if (p2Moves.includes(index)) return '0'
+    return ''
+  }
+
+  function getCellAge(index) {
+    if (p1Moves[0] === index) return 'old'
+    if (p1Moves[1] === index) return 'middle'
+    if (p1Moves[2] === index) return 'young'
+
+    if (p2Moves[0] === index) return 'old'
+    if (p2Moves[1] === index) return 'middle'
+    if (p2Moves[2] === index) return 'young'
+
+    return ''
+  }
 
   return (
     <View style={styles.gameBoard}>
